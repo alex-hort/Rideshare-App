@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+
+# Claves y configuraciones privadas
+GoogleService-Info.plist
+*.env
