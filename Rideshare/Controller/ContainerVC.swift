@@ -27,7 +27,12 @@ class ContainerVC: UIViewController {
     var homeVC: HomeVC!
 
     // Guarda si el menú está cerrado o abierto
-    var currentState: SlideOutState = .collapsed
+    var currentState: SlideOutState = .collapsed{
+        didSet{
+            let shouldShowShadow = (currentState != .collapsed)
+            shouldShowShadowForCenterViewController(status: shouldShowShadow)
+        }
+    }
 
     // Panel lateral
     var leftVC: LeftSidePanelVC!
@@ -186,6 +191,15 @@ extension ContainerVC: CenterVCDelegate {
                 }
             }
         }
+    }
+    
+    func shouldShowShadowForCenterViewController(status: Bool) {
+        let layer = centerController.view.layer
+        layer.shadowColor = UIColor.black.cgColor
+        layer.shadowRadius = 10
+        layer.shadowOffset = CGSize(width: -3, height: 0)
+        layer.masksToBounds = false
+        layer.shadowOpacity = status ? 0.6 : 0.0
     }
     
     func animateStatusBar(){
