@@ -1,4 +1,4 @@
-# 🚗 Rideshare App (HTCHHKR)
+# 🚗 Rideshare App
 
 App de viajes compartidos para iOS construida con Swift y UIKit. Permite al usuario elegir su ubicación, buscar un destino y solicitar un viaje sobre un mapa.
 
