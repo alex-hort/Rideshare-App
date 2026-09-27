@@ -412,6 +412,9 @@
                                                 <fontDescription key="titleFontDescription" name="AvenirNext-Heavy" family="Avenir Next" pointSize="15"/>
                                                 <color key="baseForegroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                             </buttonConfiguration>
+                                            <connections>
+                                                <action selector="authBtonWasPressed:" destination="7jl-mv-t2y" eventType="touchUpInside" id="msw-54-ikY"/>
+                                            </connections>
                                         </button>
                                     </subviews>
                                     <constraints>
@@ -436,6 +439,12 @@
                             <constraint firstItem="k15-O6-IOJ" firstAttribute="trailing" secondItem="58m-Cy-5Ta" secondAttribute="trailing" id="guB-Xk-r51"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="authBtton" destination="SK8-VC-V1U" id="y0t-Rj-Q2s"/>
+                        <outlet property="emailField" destination="MrF-zJ-v8O" id="A4f-8Z-duu"/>
+                        <outlet property="passwordField" destination="ePA-Xj-jEr" id="Xkd-zp-re6"/>
+                        <outlet property="segmentedControl" destination="04C-aS-E0P" id="agj-Ic-XKj"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="aJ6-yU-34n" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
