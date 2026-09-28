@@ -292,19 +292,74 @@
                                     <action selector="signUpLoginBtnWasPressed:" destination="Xu7-j5-cMw" eventType="touchUpInside" id="0Ae-MR-RBn"/>
                                 </connections>
                             </button>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="equalSpacing" alignment="top" spacing="12" translatesAutoresizingMaskIntoConstraints="NO" id="6rd-bR-ktk">
+                                <rect key="frame" x="25" y="500" width="170" height="190"/>
+                                <subviews>
+                                    <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="top" spacing="5" translatesAutoresizingMaskIntoConstraints="NO" id="m82-Ob-U1G">
+                                        <rect key="frame" x="0.0" y="0.0" width="170" height="52.333333333333336"/>
+                                        <subviews>
+                                            <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="cyD-gc-AfP">
+                                                <rect key="frame" x="0.0" y="0.0" width="63" height="28"/>
+                                                <connections>
+                                                    <action selector="switchWasToggle:" destination="Xu7-j5-cMw" eventType="valueChanged" id="MhN-NZ-YIY"/>
+                                                </connections>
+                                            </switch>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="PICKUP MODE ENABLED" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="nKH-lg-wti">
+                                                <rect key="frame" x="0.0" y="33" width="170" height="19.333333333333329"/>
+                                                <fontDescription key="fontDescription" name="AvenirNext-Bold" family="Avenir Next" pointSize="14"/>
+                                                <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                    </stackView>
+                                    <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="sample-photo" translatesAutoresizingMaskIntoConstraints="NO" id="qMg-N9-p4D" customClass="RoundImageView" customModule="Rideshare" customModuleProvider="target">
+                                        <rect key="frame" x="0.0" y="67" width="50" height="50"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="50" id="Hjr-WC-juB"/>
+                                            <constraint firstAttribute="width" constant="50" id="nGw-3G-ZDK"/>
+                                        </constraints>
+                                    </imageView>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="email@google.com" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Tth-4S-U7S">
+                                        <rect key="frame" x="0.0" y="131.33333333333337" width="159.66666666666666" height="24.666666666666657"/>
+                                        <fontDescription key="fontDescription" name="AvenirNext-Regular" family="Avenir Next" pointSize="18"/>
+                                        <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" verticalCompressionResistancePriority="749" text="ACCOUNT TYPE" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="p5l-yR-cI2">
+                                        <rect key="frame" x="0.0" y="170.66666666666663" width="108.33333333333333" height="19.333333333333343"/>
+                                        <fontDescription key="fontDescription" name="AvenirNext-Bold" family="Avenir Next" pointSize="14"/>
+                                        <color key="textColor" red="0.33333333329999998" green="0.33333333329999998" blue="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="190" id="2wA-mc-rHq"/>
+                                    <constraint firstAttribute="width" constant="170" id="97c-LP-LUv"/>
+                                </constraints>
+                            </stackView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="CuN-05-vS5"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="PFK-q2-WtH" firstAttribute="trailing" secondItem="CuN-05-vS5" secondAttribute="trailing" id="ExC-lA-Ea4"/>
                             <constraint firstItem="1jd-Ls-q4W" firstAttribute="top" secondItem="PFK-q2-WtH" secondAttribute="bottom" constant="20" id="KVk-xY-7A6"/>
+                            <constraint firstItem="6rd-bR-ktk" firstAttribute="leading" secondItem="CuN-05-vS5" secondAttribute="leading" constant="25" id="OOO-2P-dq5"/>
                             <constraint firstItem="1jd-Ls-q4W" firstAttribute="leading" secondItem="CuN-05-vS5" secondAttribute="leading" constant="20" id="cdz-Ep-pH5"/>
                             <constraint firstItem="CuN-05-vS5" firstAttribute="bottom" secondItem="Iak-zc-5t5" secondAttribute="bottom" constant="20" id="hcA-aE-2UH"/>
                             <constraint firstItem="Iak-zc-5t5" firstAttribute="leading" secondItem="CuN-05-vS5" secondAttribute="leading" constant="15" id="jc3-q8-IyP"/>
                             <constraint firstItem="PFK-q2-WtH" firstAttribute="leading" secondItem="CuN-05-vS5" secondAttribute="leading" id="oM3-FN-HdW"/>
+                            <constraint firstItem="Iak-zc-5t5" firstAttribute="top" secondItem="6rd-bR-ktk" secondAttribute="bottom" constant="27" id="r71-eC-DKg"/>
                             <constraint firstItem="PFK-q2-WtH" firstAttribute="top" secondItem="Ugi-qx-9fY" secondAttribute="top" id="wo4-ww-Lg9"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="loginOutBtton" destination="Iak-zc-5t5" id="TQv-Bo-W1f"/>
+                        <outlet property="pickupModeLabel" destination="nKH-lg-wti" id="Rbo-55-eHp"/>
+                        <outlet property="pickupModeSwitch" destination="cyD-gc-AfP" id="hZ4-qg-HNm"/>
+                        <outlet property="userAccountLabel" destination="p5l-yR-cI2" id="NBZ-83-hmy"/>
+                        <outlet property="userEmailLabel" destination="Tth-4S-U7S" id="iw1-dg-c0t"/>
+                        <outlet property="userImageView" destination="qMg-N9-p4D" id="bgu-oK-adG"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="9jv-qw-ihF" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
