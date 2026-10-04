@@ -181,6 +181,9 @@
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="plain" image="centerMapBtn"/>
+                                <connections>
+                                    <action selector="centerMapBtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="OkQ-CT-KlB"/>
+                                </connections>
                             </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
@@ -206,6 +209,7 @@
                     </view>
                     <connections>
                         <outlet property="actionBtton" destination="HK8-71-Pfg" id="uPW-Oc-scY"/>
+                        <outlet property="centerMapBton" destination="uWq-MH-KtJ" id="U8e-fj-i5X"/>
                         <outlet property="mapView" destination="HZ1-XE-ULL" id="yqB-uc-bUe"/>
                     </connections>
                 </viewController>

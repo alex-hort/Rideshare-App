@@ -8,6 +8,8 @@
 import UIKit
 import FirebaseAuth
 import FirebaseDatabase
+import CoreLocation
+
 
 class LeftSidePanelVC: UIViewController {
     
@@ -39,6 +41,7 @@ class LeftSidePanelVC: UIViewController {
         observePassengerAndDrivers()
         
         
+        
         if Auth.auth().currentUser == nil {
             userEmailLabel.text = ""
             userAccountLabel.text = ""
@@ -53,6 +56,7 @@ class LeftSidePanelVC: UIViewController {
     }
     
     func observePassengerAndDrivers(){
+        
         DataService.instance.REF_USERS.observeSingleEvent(of: .value) { (snapshot) in
             if let snapshot = snapshot.children.allObjects as? [DataSnapshot]{
                 for snap in snapshot{
@@ -70,14 +74,14 @@ class LeftSidePanelVC: UIViewController {
                         self.userAccountLabel.text = "DRIVER"
                         self.pickupModeSwitch.isHidden = false
                         
-                        let switchStatus = snap.childSnapshot(forPath: "isPickupModeEnabled").value as! Bool
+                        // 👇 AQUÍ: reemplaza el "as! Bool" por esta versión segura
+                        let switchStatus = snap.childSnapshot(forPath: "isPickupModeEnabled").value as? Bool ?? false
                         self.pickupModeSwitch.isOn = switchStatus
+                        
                         self.pickupModeLabel.isHidden = false
                     }
                 }
             }
-            
-        
         }
     }
     
@@ -106,15 +110,22 @@ class LeftSidePanelVC: UIViewController {
     
     
     @IBAction func switchWasToggle(_ sender: Any) {
-        if pickupModeSwitch.isOn{
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        var values: [String: Any] = ["isPickupModeEnabled": pickupModeSwitch.isOn]
+
+        if pickupModeSwitch.isOn {
             pickupModeLabel.text = "PICKUP MODE ENABLED"
-            appDelegate.menuConteinerVC.toggleLeftPanel()
-            DataService.instance.REF_DRIVERS.child(currentUserId!).updateChildValues(["isPickupModeEnabled": true])
+            // Escribe la ubicación al activar, sin esperar a que cambie
+            if let c = CLLocationManager().location?.coordinate {
+                values["coordinate"] = [c.latitude, c.longitude]
+            }
         } else {
             pickupModeLabel.text = "PICKUP MODE DISABLED"
-            appDelegate.menuConteinerVC.toggleLeftPanel()
-            DataService.instance.REF_DRIVERS.child(currentUserId!).updateChildValues(["isPickupModeEnabled":false])
         }
+
+        appDelegate.menuConteinerVC.toggleLeftPanel()
+        DataService.instance.REF_DRIVERS.child(uid).updateChildValues(values)
     }
     
 }

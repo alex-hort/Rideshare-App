@@ -8,6 +8,7 @@
 import UIKit
 import FirebaseAuth
 
+
 class LoginVC: UIViewController, UITextFieldDelegate {
     
     //MARK: BUTTONS EMAIL & PASSWORD
@@ -85,7 +86,7 @@ class LoginVC: UIViewController, UITextFieldDelegate {
                             let userData = [
                                 "provider": result.user.providerID,
                                 "userIsDriver": true,
-                                "isPickupModeEnable": false,
+                                "isPickupModeEnabled": false,
                                 "driverIsOnTrip": false
                             ] as [String: Any]
                             
@@ -154,7 +155,7 @@ class LoginVC: UIViewController, UITextFieldDelegate {
                                     let userData = [
                                         "provider": user.user.providerID,
                                         "userIsDriver": true,
-                                        "isPickupModeEnable": false,
+                                        "isPickupModeEnabled": false,
                                         "driverIsOnTrip": false
                                     ] as [String: Any]
                                     
