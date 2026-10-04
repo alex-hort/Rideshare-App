@@ -18,6 +18,8 @@ class HomeVC: UIViewController{
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var actionBtton: RoundedShadowButton!
     @IBOutlet weak var centerMapBton: UIButton!
+    @IBOutlet weak var destinationTextField: UITextField!
+    @IBOutlet weak var destinationCircle: CircleView!
     
     var delegate: CenterVCDelegate?
     
@@ -26,10 +28,16 @@ class HomeVC: UIViewController{
     
     let revealingSplashView =  RevealingSplashView(iconImage: .launchScreenIcon, iconInitialSize: CGSize(width: 80, height: 80), backgroundColor: .white)
     
+    var tableView =  UITableView()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        //delegados
         mapView.delegate = self
+        destinationTextField.delegate = self
+        
+        
         mapView.showsUserLocation = true
 
         manager = CLLocationManager()
@@ -138,6 +146,105 @@ class HomeVC: UIViewController{
 
 
 
+//MARK: EXTENSIONS
+
+extension HomeVC: UITextFieldDelegate{
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        
+        if textField == destinationTextField{
+            tableView.frame = CGRect(x: 20, y: view.frame.height, width: view.frame.width - 40, height: view.frame.height - 150)
+            tableView.layer.cornerRadius = 5.0
+            tableView.register(UITableViewCell.self, forCellReuseIdentifier: "locationCell")
+            
+            tableView.delegate = self
+            tableView.dataSource = self
+            
+            tableView.tag = 18
+            tableView.rowHeight = 60
+            view.addSubview(tableView)
+            
+            
+            animateTableView(shouldShow: true)
+            
+            UIView.animate(withDuration: 0.2) {
+                self.destinationCircle.backgroundColor = UIColor.red
+                self.destinationCircle.borderColor = UIColor.init(red: 199 / 255, green: 0 / 255, blue: 0 / 255, alpha: 1.0)
+            }
+        }
+    }
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        if textField == destinationTextField{
+            //perform search
+            //performSearch()
+            view.endEditing(true)
+        }
+        return true
+    }
+    
+    func textFieldShouldClear(_ textField: UITextField) -> Bool {
+        centerMapOnUserLocation()
+        return true
+    }
+    
+    func textFieldDidEndEditing(_ textField: UITextField) {
+        if textField == destinationTextField{
+            if destinationTextField.text == "" {
+                UIView.animate(withDuration: 0.2) {
+                    self.destinationCircle.backgroundColor = UIColor.lightGray
+                    self.destinationCircle.borderColor = UIColor.darkGray
+                
+                }
+            }
+        }
+    }
+    
+    func animateTableView(shouldShow: Bool) {
+        if shouldShow {
+            UIView.animate(withDuration: 0.2) {
+                self.tableView.frame = CGRect(x: 20,
+                                              y: 240,                       // debajo de la caja "Where are you going?"
+                                              width: self.view.frame.width - 40,
+                                              height: 600)                  // altura que tú quieras
+            }
+        
+            
+        } else{
+            UIView.animate(withDuration: 0.2) {
+                self.tableView.frame = CGRect(x: 20,
+                                              y: 240,                       // debajo de la caja "Where are you going?"
+                                              width: self.view.frame.width - 40,
+                                              height: 600)                  // altura que tú quieras
+            } completion: { finished in
+                for subview in self.view.subviews{
+                    if subview.tag == 18{
+                        subview.removeFromSuperview()
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+extension HomeVC : UITableViewDelegate, UITableViewDataSource{
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        return UITableViewCell()
+    }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 5
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        animateTableView(shouldShow: false)
+        print("selected")
+    }
+}
 
 extension HomeVC: CLLocationManagerDelegate {
 
@@ -176,8 +283,6 @@ extension HomeVC: CLLocationManagerDelegate {
         manager.stopUpdatingLocation()
     }
 }
-
-
 extension HomeVC: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, didUpdate userLocation: MKUserLocation) {
         UpdateService.instance.updateUserLocation(withCoordinate: userLocation.coordinate)
