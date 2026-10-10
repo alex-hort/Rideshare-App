@@ -13,7 +13,7 @@ import Firebase
 import FirebaseAuth
 
 
-class HomeVC: UIViewController{
+class HomeVC: UIViewController, Alertable{
 
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var actionBtton: RoundedShadowButton!
@@ -24,6 +24,8 @@ class HomeVC: UIViewController{
     var delegate: CenterVCDelegate?
     
     var manager: CLLocationManager?
+    var currentUserId = Auth.auth().currentUser?.uid
+    
     var regionRadius: CLLocationDistance = 1000
     
     let revealingSplashView =  RevealingSplashView(iconImage: .launchScreenIcon, iconInitialSize: CGSize(width: 80, height: 80), backgroundColor: .white)
@@ -31,6 +33,8 @@ class HomeVC: UIViewController{
     var tableView =  UITableView()
     
     var matchingItems: [MKMapItem] = [MKMapItem]()
+    var selectedItemPlacemark: MKPlacemark? = nil
+    var route: MKRoute!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -133,8 +137,23 @@ class HomeVC: UIViewController{
     
     
     @IBAction func centerMapBtonPressed(_ sender: Any) {
-        centerMapOnUserLocation()
-        centerMapBton.fadeTo(alphaValue: 0.0, withDuration: 0.2)
+        DataService.instance.REF_USERS.observeSingleEvent(of: .value) { snapshot in
+            if let userSnapshot = snapshot.children.allObjects as? [DataSnapshot]{
+                for user in userSnapshot{
+                    if user.key == self.currentUserId!{
+                        if user.hasChild("tripCoordinate"){
+                            self.zoom(toFitAnnotationsFromMapView: self.mapView)
+                            self.centerMapBton.fadeTo(alphaValue: 0.0, withDuration: 0.2)
+                        } else {
+                            self.centerMapOnUserLocation()
+                            self.centerMapBton.fadeTo(alphaValue: 0.0, withDuration: 0.2)
+                        }
+                    }
+                }
+            }
+        }
+        
+        
     }
     
     @IBAction func actionButtonWasPressed(_ sender: Any) {
@@ -179,6 +198,7 @@ extension HomeVC: UITextFieldDelegate{
         if textField == destinationTextField{
             //perform search
             performSearch()
+            shouldPresentLoadingView(true)
             view.endEditing(true)
         }
         return true
@@ -187,6 +207,19 @@ extension HomeVC: UITextFieldDelegate{
     func textFieldShouldClear(_ textField: UITextField) -> Bool {
         matchingItems = []
         tableView.reloadData()
+        
+        
+        //delete trip coordinate with cancel trip
+        DataService.instance.REF_USERS.child(currentUserId!).child("tripCoordinate").removeValue()
+        mapView.removeOverlays(mapView.overlays)
+        for annotation in mapView.annotations{
+            if let annotation = annotation as? MKPointAnnotation{
+                mapView.removeAnnotation(annotation)
+            } else if annotation.isKind(of: PassengerAnnotation.self){
+                mapView.removeAnnotation(annotation)
+            }
+            
+        }
         
         centerMapOnUserLocation()
         return true
@@ -250,8 +283,37 @@ extension HomeVC : UITableViewDelegate, UITableViewDataSource{
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        shouldPresentLoadingView(true)
+        //get coodinate
+        let passengerCoordinate = manager?.location?.coordinate
+        let passengerAnnotation = PassengerAnnotation(coordinate: passengerCoordinate!, key: currentUserId!)
+        mapView.addAnnotation(passengerAnnotation)
+        
+        //same title of field destination
+        destinationTextField.text = tableView.cellForRow(at: indexPath)?.textLabel?.text
+        
+        //save to firebase 'tripCoordinate'
+        let selectedMapItem = matchingItems[indexPath.row]
+        DataService.instance.REF_USERS.child(currentUserId!).updateChildValues(["tripCoordinate": [selectedMapItem.placemark.coordinate.latitude, selectedMapItem.placemark.coordinate.longitude]])
+        
+        
+        dropPinFor(placeMark: selectedMapItem.placemark)
+        
+        searchMapKitForResultsWithPolyline(forMapItem: selectedMapItem)
+        
         animateTableView(shouldShow: false)
         print("selected")
+    }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        view.endEditing(true)
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        if destinationTextField.text == "" {
+            animateTableView(shouldShow: false)
+        }
     }
 }
 
@@ -306,6 +368,22 @@ extension HomeVC: MKMapViewDelegate {
             view = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
             view.image = UIImage(named: "driverAnnotation")
             return view
+        } else if let annotation = annotation as? PassengerAnnotation{
+            let identifier = "passenger"
+            var view: MKAnnotationView
+            view = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+            view.image = UIImage(named: "currentLocationAnnotation")
+            return view
+        } else if let annotation = annotation as? MKPointAnnotation{
+            let identifer = "destination"
+            var annotationView = mapView.dequeueReusableAnnotationView(withIdentifier: identifer)
+            if annotationView == nil {
+                annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: identifer)
+            } else {
+                annotationView?.annotation = annotation
+            }
+            annotationView?.image = UIImage(named: "destinationAnnotation")
+            return annotationView
         }
         return nil
     
@@ -314,6 +392,16 @@ extension HomeVC: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
         centerMapBton.fadeTo(alphaValue: 1.0, withDuration: 0.2)
+    }
+    
+    func mapView(_ mapView: MKMapView, rendererFor overlay: any MKOverlay) -> MKOverlayRenderer {
+        let linearRenderer = MKPolylineRenderer(overlay: self.route.polyline)
+        linearRenderer.strokeColor = UIColor(red: 216/255, green: 71/255, blue: 30/255, alpha: 0.75)
+        linearRenderer.lineWidth = 3
+        
+        zoom(toFitAnnotationsFromMapView: self.mapView)
+        
+        return linearRenderer
     }
     
     func performSearch(){
@@ -326,17 +414,97 @@ extension HomeVC: MKMapViewDelegate {
         
         search.start { response, error in
             if error != nil {
-                print(error.debugDescription)
+                self.showAlert("An error ocurred, please search something real")
             } else if response!.mapItems.count == 0 {
-                print("No results")
+                self.showAlert("No result! Please search again..")
             } else {
                 for mapItem in response!.mapItems {
                     self.matchingItems.append(mapItem as MKMapItem)
                     self.tableView.reloadData()
+                    self.shouldPresentLoadingView(false)
                 }
             }
         }
         
+    }
+    
+    
+    func dropPinFor(placeMark: MKPlacemark){
+        selectedItemPlacemark = placeMark
+        
+        for annotation in mapView.annotations{
+            if annotation.isKind(of: MKPointAnnotation.self){
+                mapView.removeAnnotation(annotation)
+            }
+        }
+        
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = placeMark.coordinate
+        mapView.addAnnotation(annotation)
+    }
+    
+    func searchMapKitForResultsWithPolyline(forMapItem mapItem: MKMapItem){
+        let request = MKDirections.Request()
+        request.source = MKMapItem.forCurrentLocation()
+        request.destination = mapItem
+        request.transportType = MKDirectionsTransportType.automobile
+        
+        let directions = MKDirections(request: request)
+        
+        directions.calculate { response, error in
+            guard let response = response else {
+                self.showAlert(error as! String)
+                return
+            }
+            
+            self.route = response.routes[0] //the first route more faster
+            //the line
+            self.mapView.addOverlay(self.route.polyline)
+            
+            self.shouldPresentLoadingView(false)
+            
+        }
+    }
+    
+    /// Ajusta el zoom del mapa para que se vean todas las anotaciones
+    /// (excepto las de conductores) dentro de la pantalla.
+    func zoom(toFitAnnotationsFromMapView mapView: MKMapView) {
+        // Si no hay anotaciones no hay nada que encuadrar
+        if mapView.annotations.count == 0 {
+            return
+        }
+
+        // Empezamos con valores "imposibles" para que cualquier coordenada real los reemplace.
+        // topLeft = esquina noroeste, bottomRight = esquina sureste
+        var topLeftCoordinate = CLLocationCoordinate2D(latitude: -90, longitude: 180)
+        var bottomRightCoordinate = CLLocationCoordinate2D(latitude: 90, longitude: -180)
+
+        // Recorremos las anotaciones, ignorando las de tipo DriverAnnotation,
+        // para encontrar los extremos del rectángulo que las contiene a todas
+        for annotation in mapView.annotations where !annotation.isKind(of: DriverAnnotation.self) {
+            topLeftCoordinate.longitude = fmin(topLeftCoordinate.longitude, annotation.coordinate.longitude)         // más al oeste
+            topLeftCoordinate.latitude = fmax(topLeftCoordinate.latitude, annotation.coordinate.latitude)            // más al norte
+            bottomRightCoordinate.longitude = fmax(bottomRightCoordinate.longitude, annotation.coordinate.longitude) // más al este
+            bottomRightCoordinate.latitude = fmin(bottomRightCoordinate.latitude, annotation.coordinate.latitude)    // más al sur
+        }
+
+        // Centro = punto medio entre las dos esquinas
+        let center = CLLocationCoordinate2D(
+            latitude: topLeftCoordinate.latitude - (topLeftCoordinate.latitude - bottomRightCoordinate.latitude) * 0.5,
+            longitude: topLeftCoordinate.longitude + (bottomRightCoordinate.longitude - topLeftCoordinate.longitude) * 0.5
+        )
+
+        // Span = tamaño del rectángulo x 2.0, para dejar margen y que los pines no queden pegados al borde
+        let span = MKCoordinateSpan(
+            latitudeDelta: fabs(topLeftCoordinate.latitude - bottomRightCoordinate.latitude) * 2.0,
+            longitudeDelta: fabs(bottomRightCoordinate.longitude - topLeftCoordinate.longitude) * 2.0
+        )
+
+        var region = MKCoordinateRegion(center: center, span: span)
+
+        // Ajusta la región al aspecto real del mapa en pantalla
+        region = mapView.regionThatFits(region)
+        mapView.setRegion(region, animated: true)
     }
 }
 

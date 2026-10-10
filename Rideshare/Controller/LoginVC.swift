@@ -9,7 +9,7 @@ import UIKit
 import FirebaseAuth
 
 
-class LoginVC: UIViewController, UITextFieldDelegate {
+class LoginVC: UIViewController, UITextFieldDelegate, Alertable {
     
     //MARK: BUTTONS EMAIL & PASSWORD
     
@@ -98,9 +98,7 @@ class LoginVC: UIViewController, UITextFieldDelegate {
                             )
                         }
                     }
-                    
-                    // Login correcto
-                    print("EMAIL USER AUTHENTICATED SUCCESSFULLY WITH FB")
+                
                     
                     // Cierra la pantalla
                     self.dismiss(animated: true, completion: nil)
@@ -110,9 +108,10 @@ class LoginVC: UIViewController, UITextFieldDelegate {
                         switch errorCode {
                         
                         case .wrongPassword:
-                            print("Whoops! That was the wrong password!")
+                            self.showAlert("Whoops! That was the wrong password!")
+                           
                         default:
-                            print("An unexpected error occurred. Please try again.")
+                            self.showAlert("An unexpected error occurred. Please try again.")
                         }
                     }
                     // Si el usuario no existe, intenta crearlo
@@ -124,10 +123,10 @@ class LoginVC: UIViewController, UITextFieldDelegate {
                             if let errorCode = AuthErrorCode(rawValue: error._code) {
                                 switch errorCode {
                                 case .invalidEmail:
-                                    print("That is an invalid email!. Please try again.")
+                                    self.showAlert("That is an invalid email!. Please try again.")
                                     
                                 default:
-                                    print("An unexpected error occurred. Please try again.")
+                                    self.showAlert("An unexpected error occurred. Please try again.")
                                 }
                             }
                             
@@ -166,8 +165,7 @@ class LoginVC: UIViewController, UITextFieldDelegate {
                                         isDriver: true
                                     )
                                 }
-                                
-                                print("SUCCESSFULLY CREATED A NEW USER WITH FB")
+                        
                                 self.dismiss(animated: true, completion: nil)
                             }
                         }
