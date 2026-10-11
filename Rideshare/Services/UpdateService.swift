@@ -41,4 +41,43 @@ class UpdateService {
         }
     }
     
+    // Escucha en tiempo real todos los viajes (trips) y le entrega al handler
+    // el diccionario de cada viaje que sea una solicitud válida.
+    func observeTrips(handler: @escaping (_ coordinateDict: [String: Any]?) -> Void) {
+        // Se suscribe a REF_TRIPS: el closure se ejecuta cada vez que algo cambia en esa rama
+        DataService.instance.REF_TRIPS.observe(.value) { snapshot in
+            // Convierte los hijos del snapshot en un arreglo de DataSnapshot (un snapshot por viaje)
+            guard let tripSnapshots = snapshot.children.allObjects as? [DataSnapshot] else { return }
+
+            for trip in tripSnapshots {
+                // Solo considera viajes que ya tengan pasajero y estado de aceptación,
+                // es decir, solicitudes completas (ignora nodos a medio crear)
+                if trip.hasChild("passengerKey") && trip.hasChild("tripIsAccepted") {
+                    // Convierte el viaje a diccionario y se lo manda al handler
+                    if let tripDict = trip.value as? [String: Any] {
+                        handler(tripDict)
+                    }
+                }
+            }
+        }
+    }
+    
+    
+    func updateTripsWithCoordinateUponRequest() {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+
+        DataService.instance.REF_USERS.child(uid).observeSingleEvent(of: .value) { snapshot in
+            guard !snapshot.hasChild("userIsDriver"),
+                  let userDict = snapshot.value as? [String: Any],
+                  let pickUpArray = userDict["coordinate"] as? [Double],
+                  pickUpArray.count >= 2 else { return }
+
+            DataService.instance.REF_TRIPS.child(uid).updateChildValues([
+                "pickupCoordinate": [pickUpArray[0], pickUpArray[1]],
+                "passengerKey": uid,
+                "tripIsAccepted": false
+            ])
+        }
+    }
+    
 }
