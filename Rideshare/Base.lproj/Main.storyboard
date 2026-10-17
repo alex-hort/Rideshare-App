@@ -185,6 +185,21 @@
                                     <action selector="centerMapBtonPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="OkQ-CT-KlB"/>
                                 </connections>
                             </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cZm-0z-iwk">
+                                <rect key="frame" x="133" y="620" width="127" height="36"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="127" id="SyH-jE-GPL"/>
+                                    <constraint firstAttribute="height" constant="36" id="tbP-kf-Mm8"/>
+                                </constraints>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="CANCEL TRIP">
+                                    <fontDescription key="titleFontDescription" name="AvenirNext-Bold" family="Avenir Next" pointSize="16"/>
+                                    <color key="baseForegroundColor" red="0.84705882349999995" green="0.2784313725" blue="0.1176470588" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="cancelBtonWasPressed:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Csp-Hq-X1n"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -197,6 +212,8 @@
                             <constraint firstItem="tne-IS-wYB" firstAttribute="top" secondItem="8bC-Xf-vdC" secondAttribute="top" constant="60" id="H0H-lD-iwT"/>
                             <constraint firstItem="tne-IS-wYB" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leading" constant="20" id="T9d-bQ-Smj"/>
                             <constraint firstItem="hoT-Iz-TAn" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" id="XDB-W0-X1Z"/>
+                            <constraint firstItem="cZm-0z-iwk" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="cx6-6L-aNM"/>
+                            <constraint firstItem="hoT-Iz-TAn" firstAttribute="top" secondItem="cZm-0z-iwk" secondAttribute="bottom" constant="8" symbolic="YES" id="dPW-fw-wng"/>
                             <constraint firstItem="AFM-QX-L73" firstAttribute="leading" secondItem="HZ1-XE-ULL" secondAttribute="leading" id="dPx-Al-zSl"/>
                             <constraint firstItem="hoT-Iz-TAn" firstAttribute="trailing" secondItem="6Tk-OE-BBY" secondAttribute="trailing" id="fCk-ge-UIY"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="uWq-MH-KtJ" secondAttribute="trailing" constant="20" id="jSq-eG-1rY"/>
@@ -209,6 +226,7 @@
                     </view>
                     <connections>
                         <outlet property="actionBtton" destination="HK8-71-Pfg" id="uPW-Oc-scY"/>
+                        <outlet property="cancelBton" destination="cZm-0z-iwk" id="sT8-f5-za6"/>
                         <outlet property="centerMapBton" destination="uWq-MH-KtJ" id="U8e-fj-i5X"/>
                         <outlet property="destinationCircle" destination="Zbw-sJ-3yO" id="biZ-cg-KWM"/>
                         <outlet property="destinationTextField" destination="P6U-bU-pei" id="hFQ-uD-afK"/>

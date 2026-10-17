@@ -10,6 +10,8 @@ import FirebaseCore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
+    
+    var window: UIWindow?
    
     fileprivate var containerVC = ContainerVC()
     var menuConteinerVC: ContainerVC{

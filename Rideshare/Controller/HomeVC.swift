@@ -21,6 +21,8 @@ class HomeVC: UIViewController, Alertable{
     @IBOutlet weak var destinationTextField: UITextField!
     @IBOutlet weak var destinationCircle: CircleView!
     
+    @IBOutlet weak var cancelBton: UIButton!
+    
     var delegate: CenterVCDelegate?
     
     var manager: CLLocationManager?
@@ -87,6 +89,53 @@ class HomeVC: UIViewController, Alertable{
                 }
             }
         }
+        
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+
+        DataService.instance.driverIsAvailable(key: self.currentUserId!, handler: { (status) in
+            if status == false {
+                DataService.instance.REF_TRIPS.observeSingleEvent(of: .value, with: { (tripSnapshot) in
+                    if let tripSnapshot = tripSnapshot.children.allObjects as? [DataSnapshot] {
+                        for trip in tripSnapshot {
+                            if trip.childSnapshot(forPath: "driverKey").value as? String == self.currentUserId! {
+                                let pickupCoordinateArray = trip.childSnapshot(forPath: "pickupCoordinate").value as! NSArray
+                                let pickupCoordinate = CLLocationCoordinate2D(latitude: pickupCoordinateArray[0] as! CLLocationDegrees, longitude: pickupCoordinateArray[1] as! CLLocationDegrees)
+                                let pickupPlacemark = MKPlacemark(coordinate: pickupCoordinate)
+
+                                self.dropPinFor(placeMark: pickupPlacemark)
+                                self.searchMapKitForResultsWithPolyline(forMapItem: MKMapItem(placemark: pickupPlacemark))
+                            }
+                        }
+                    }
+                })
+            }
+        })
+        
+        DataService.instance.REF_TRIPS.observe(.childRemoved) { removeTripSnapshot in
+            let removedTripDict = removeTripSnapshot.value as? [String: AnyObject]
+            if removedTripDict?["driverKey"] != nil{
+                DataService.instance.REF_DRIVERS.child(removedTripDict?["driverKey"] as! String).updateChildValues(["driverIsOnTrip": false])
+                
+            }
+                
+                DataService.instance.userIsDriver(userKey: self.currentUserId!) { isDriver in
+                    if isDriver == true{
+                        
+                    } else {
+                        self.cancelBton.fadeTo(alphaValue: 0.0, withDuration: 0.2)
+                        self.actionBtton.animateButton(shouldLoad: false, withMessage: "REQUEST RIDE")
+                        
+                        self.destinationTextField.isUserInteractionEnabled = true
+                        self.destinationTextField.text = ""
+                        
+                        self.centerMapOnUserLocation()
+                    }
+                }
+            }
         
     }
     
@@ -160,6 +209,23 @@ class HomeVC: UIViewController, Alertable{
         mapView.setRegion(coordinateRegion, animated: true)
     }
     
+    
+    @IBAction func cancelBtonWasPressed(_ sender: Any) {
+        DataService.instance.driverIsOnTrip(driverKey: currentUserId!) { isOnTrip, driverKey, tripKey in
+            if isOnTrip == true{
+                UpdateService.instance.cancelTrip(withPassengerKey: tripKey!, forDriverKey: driverKey!)
+            }
+        }
+        
+        DataService.instance.passengerIsOnTrip(passengerKey: currentUserId!) { isOnTrip, driverKey, tripKey in
+            if isOnTrip == true{
+                UpdateService.instance.cancelTrip(withPassengerKey: self.currentUserId!, forDriverKey: driverKey!)
+            } else {
+                UpdateService.instance.cancelTrip(withPassengerKey: self.currentUserId!, forDriverKey: nil)
+            }
+        }
+            
+    }
     
     @IBAction func centerMapBtonPressed(_ sender: Any) {
         DataService.instance.REF_USERS.observeSingleEvent(of: .value) { snapshot in
@@ -428,6 +494,8 @@ extension HomeVC: MKMapViewDelegate {
         linearRenderer.strokeColor = UIColor(red: 216/255, green: 71/255, blue: 30/255, alpha: 0.75)
         linearRenderer.lineWidth = 3
         
+        shouldPresentLoadingView(false)
+        
         zoom(toFitAnnotationsFromMapView: self.mapView)
         
         return linearRenderer
@@ -490,7 +558,8 @@ extension HomeVC: MKMapViewDelegate {
             //the line
             self.mapView.addOverlay(self.route.polyline)
             
-            self.shouldPresentLoadingView(false)
+            let delegate = AppDelegate.getAppDelegate()
+            delegate.window?.rootViewController?.shouldPresentLoadingView(false)
             
         }
     }
