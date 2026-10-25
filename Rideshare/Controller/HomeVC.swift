@@ -13,13 +13,6 @@ import Firebase
 import FirebaseAuth
 
 
-enum AnnotationType{
-    case pickup, destination, driver
-}
-
-enum ButtonAction{
-    case requestRide, getDirectionsToPassenger, getDirectionsToDestination, startTrip, endTrip
-}
 
 class HomeVC: UIViewController, Alertable{
 
@@ -438,7 +431,21 @@ class HomeVC: UIViewController, Alertable{
                     }
             }
         case .getDirectionsToDestination:
-            break
+            DataService.instance.driverIsOnTrip(driverKey: self.currentUserId!, handler: { (isOnTrip, driverKey, tripKey) in
+                if isOnTrip == true {
+                    DataService.instance.REF_TRIPS.child(tripKey!).child("destinationCoordinate").observe(.value, with: { (snapshot) in
+                        let destinationCoordinateArray = snapshot.value as! NSArray
+                        let destinationCoordinate = CLLocationCoordinate2D(latitude: destinationCoordinateArray[0] as! CLLocationDegrees, longitude: destinationCoordinateArray[1] as! CLLocationDegrees)
+                        let destinationPlacemark = MKPlacemark(coordinate: destinationCoordinate)
+                        let destinationMapItem = MKMapItem(placemark: destinationPlacemark)
+
+                        destinationMapItem.name = "Passenger Destination"
+                        destinationMapItem.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
+                    })
+                }
+            })
+            
+            
         case .startTrip:
             guard let uid = currentUserId else { return }
             DataService.instance.driverIsOnTrip(driverKey: uid) { [weak self] isOnTrip, _, tripKey in
@@ -466,7 +473,13 @@ class HomeVC: UIViewController, Alertable{
                     }
             }
         case .endTrip:
-            break
+            DataService.instance.driverIsOnTrip(driverKey: self.currentUserId!) { isOnTrip, driverKey, tripKey in
+                if isOnTrip == true {
+                    UpdateService.instance.cancelTrip(withPassengerKey: tripKey!, forDriverKey: driverKey!)
+                    self.buttonsForDriver(areHidden: true)
+                    
+                }
+            }
         }
     }
 }
